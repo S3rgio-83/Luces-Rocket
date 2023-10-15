@@ -25,6 +25,8 @@ unsigned long elapsedTime = 0;
 enum Effect { NARANJA, VERDE_ROJO, AZUL_BLANCO  };
 Effect currentEffect = NARANJA;
 
+bool secuenciaEncendida = false;  //para comunicacion RX
+
 void setup() {
   Serial.begin(9600); // Inicializa la comunicación serial para depuración
   strip.begin();
@@ -72,7 +74,24 @@ void VerdeRojoEffect() {
   strip.show();
 }
 
-void loop() {
+void loop() { //Prueba RX
+  if (Serial.available() > 0) {
+    String command = Serial.readStringUntil('\n'); // Leer el comando de la comunicación serial
+
+    if (command == "on" && !secuenciaEncendida) {
+      // Iniciar la secuencia
+      secuenciaEncendida = true;
+      Serial.println("Secuencia encendida.");
+    } else if (command == "off" && secuenciaEncendida) {
+      // Detener la secuencia
+      secuenciaEncendida = false;
+      strip.clear(); // Apagar todos los LEDs
+      strip.show();
+      Serial.println("Secuencia apagada.");
+    }
+  }
+
+  if (secuenciaEncendida) {   //Hasta aqui para la prueba
   unsigned long currentTime = millis();
   elapsedTime = currentTime - startTime;
 
@@ -97,4 +116,5 @@ void loop() {
   } else if (currentEffect == VERDE_ROJO) {
     VerdeRojoEffect();
   }
+}
 }
